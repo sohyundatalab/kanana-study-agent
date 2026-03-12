@@ -773,8 +773,35 @@ WHERE SALARY >= 5000;""",
 # --------------------------------------------------
 # LLM functions
 # --------------------------------------------------
+@st.cache_data(ttl=3600, show_spinner=False)
 def explain_with_llm(subject, concept):
-    return get_concept_from_wikipedia(concept)
+    concept = (concept or "").strip()
+    if not concept:
+        return """1. 개념 정의
+설명할 개념이 비어 있습니다.
+
+2. 핵심 원리
+궁금한 개념을 입력해주세요.
+
+3. 쉬운 예시
+예: JOIN, 정규분포, 트랜스포머, CTE"""
+
+    instruction = f"{subject} 학습용 개념을 초보자도 이해할 수 있게 설명하라."
+    input_text = f"과목: {subject}
+개념: {concept}"
+    output_format = "1. 개념 정의
+2. 핵심 원리
+3. 쉬운 예시 또는 예제"
+    example = """1. 개념 정의
+JOIN은 두 개 이상의 테이블을 공통 컬럼 기준으로 연결해 하나의 결과로 조회하는 SQL 기능이다.
+
+2. 핵심 원리
+테이블이 분리되어 저장된 이유는 중복을 줄이고 구조를 명확하게 하기 위해서다. JOIN은 필요한 순간에만 데이터를 연결해 읽게 해준다.
+
+3. 쉬운 예시 또는 예제
+예를 들어 회원 테이블과 주문 테이블이 있을 때, 회원 이름과 주문 금액을 함께 보고 싶다면 회원 ID를 기준으로 JOIN한다."""
+    prompt = build_prompt(instruction, input_text, output_format, example)
+    return call_api_generate(prompt, max_new_tokens=220)
 
 
 def answer_question_with_llm(subject, question):
