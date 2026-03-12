@@ -617,7 +617,7 @@ print(tokens)""",
 # --------------------------------------------------
 # API
 # --------------------------------------------------
-def call_api_generate(prompt: str, max_new_tokens: int = 180) -> str:
+def call_api_generate(prompt: str, max_new_tokens: int = 180, timeout: int | None = None) -> str:
     headers = {
         "Authorization": f"Bearer {API_KEY}",
         "Content-Type": "application/json",
@@ -629,7 +629,7 @@ def call_api_generate(prompt: str, max_new_tokens: int = 180) -> str:
             "max_new_tokens": max_new_tokens
         },
         headers=headers,
-        timeout=API_TIMEOUT
+        timeout=timeout or API_TIMEOUT
     )
     response.raise_for_status()
     data = response.json()
@@ -881,7 +881,14 @@ defaults = {
     "library_search": "",
     "sql_quiz_index": 0,
     "sql_show_answer": False,
-    "sql_user_answer": "SELECT"
+    "sql_user_answer": "SELECT",
+    "SQL_concept_result": get_default_concept_answer(),
+    "Python_concept_result": get_default_concept_answer(),
+    "통계_concept_result": get_default_concept_answer(),
+    "ML_concept_result": get_default_concept_answer(),
+    "DL_concept_result": get_default_concept_answer(),
+    "LLM_concept_result": get_default_concept_answer(),
+    "AI_concept_result": get_default_concept_answer()
 }
 for k, v in defaults.items():
     if k not in st.session_state:
@@ -1031,10 +1038,18 @@ if subject == "SQL":
         key="sql_concept"
     )
 
-    concept_result = get_default_concept_answer() if concept == "DATA 가 뭐야" else explain_with_llm("SQL", concept)
+    if st.button("💛 SQL 개념 설명 받기", use_container_width=True, key="sql_concept_btn"):
+        try:
+            if concept.strip() == "" or concept.strip() == "DATA 가 뭐야":
+                st.session_state["SQL_concept_result"] = get_default_concept_answer()
+            else:
+                st.session_state["SQL_concept_result"] = explain_with_llm("SQL", concept.strip())
+        except Exception as e:
+            st.session_state["SQL_concept_result"] = "개념 설명을 불러오지 못했습니다. 입력을 더 짧게 하거나 잠시 후 다시 시도해주세요."
+            st.error(f"API 오류: {e}")
 
     st.markdown('<div class="result-card"><div class="card-title">개념 설명</div></div>', unsafe_allow_html=True)
-    render_result_textarea(concept_result, 260, "sql_concept_default")
+    render_result_textarea(st.session_state["SQL_concept_result"], 140, "sql_concept_default")
 
     st.markdown('<div class="premium-card"><div class="section-title">🧩 AI 문제풀기</div><div class="section-desc">예시 테이블과 스키마를 보고 오른쪽에서 SQL을 직접 작성해보세요.</div></div>', unsafe_allow_html=True)
 
@@ -1122,10 +1137,18 @@ elif subject == "Python":
         key="python_concept"
     )
 
-    concept_result = get_default_concept_answer() if concept == "DATA 가 뭐야" else explain_with_llm("Python", concept)
+    if st.button("💛 Python 개념 설명 받기", use_container_width=True, key="python_concept_btn"):
+        try:
+            if concept.strip() == "" or concept.strip() == "DATA 가 뭐야":
+                st.session_state["Python_concept_result"] = get_default_concept_answer()
+            else:
+                st.session_state["Python_concept_result"] = explain_with_llm("Python", concept.strip())
+        except Exception as e:
+            st.session_state["Python_concept_result"] = "개념 설명을 불러오지 못했습니다. 입력을 더 짧게 하거나 잠시 후 다시 시도해주세요."
+            st.error(f"API 오류: {e}")
 
     st.markdown('<div class="result-card"><div class="card-title">개념 설명</div></div>', unsafe_allow_html=True)
-    render_result_textarea(concept_result, 260, "python_concept_default")
+    render_result_textarea(st.session_state["Python_concept_result"], 140, "python_concept_default")
 
     st.markdown('<div class="premium-card"><div class="section-title">🧩 AI 문제풀기</div></div>', unsafe_allow_html=True)
     st.session_state["python_code"] = st.text_area("코드 붙여넣기", value=st.session_state["python_code"], height=220)
@@ -1166,10 +1189,18 @@ elif subject in ["통계", "ML", "DL", "LLM", "AI"]:
         key=f"{subject}_concept"
     )
 
-    concept_result = get_default_concept_answer() if concept == "DATA 가 뭐야" else explain_with_llm(subject, concept)
+    if st.button(f"💛 {subject} 개념 설명 받기", use_container_width=True, key=f"{subject}_concept_btn"):
+        try:
+            if concept.strip() == "" or concept.strip() == "DATA 가 뭐야":
+                st.session_state[f"{subject}_concept_result"] = get_default_concept_answer()
+            else:
+                st.session_state[f"{subject}_concept_result"] = explain_with_llm(subject, concept.strip())
+        except Exception as e:
+            st.session_state[f"{subject}_concept_result"] = "개념 설명을 불러오지 못했습니다. 입력을 더 짧게 하거나 잠시 후 다시 시도해주세요."
+            st.error(f"API 오류: {e}")
 
     st.markdown('<div class="result-card"><div class="card-title">개념 설명</div></div>', unsafe_allow_html=True)
-    render_result_textarea(concept_result, 260, f"{subject}_concept_default")
+    render_result_textarea(st.session_state[f"{subject}_concept_result"], 140, f"{subject}_concept_default")
 
     st.markdown('<div class="premium-card"><div class="section-title">🧩 AI 문제풀기</div><div class="section-desc">주요 라이브러리를 고르거나 검색하면 위키피디아 설명과 코드 예제를 함께 보여줍니다.</div></div>', unsafe_allow_html=True)
 
