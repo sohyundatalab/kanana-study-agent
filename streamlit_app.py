@@ -564,6 +564,71 @@ def get_wiki_summary(topic: str) -> str:
             return "위키피디아 요약을 가져오지 못했습니다."
 
 
+
+
+def split_sentences(text: str):
+    if not text:
+        return []
+    parts = re.split(r'(?<=[.!?。])\s+|(?<=다\.)\s+|(?<=요\.)\s+', text.strip())
+    return [p.strip() for p in parts if p.strip()]
+
+
+def get_concept_from_wikipedia(topic: str) -> str:
+    if not topic or not topic.strip():
+        return """1. 개념 정의
+입력된 개념이 없습니다.
+
+2. 핵심 원리
+설명할 개념을 입력해주세요.
+
+3. 쉬운 예시
+예: JOIN, 정규분포, 트랜스포머"""
+
+    topic = topic.strip()
+
+    try:
+        summary = wikipedia.summary(topic, sentences=3, auto_suggest=False)
+        page_title = topic
+    except Exception:
+        try:
+            results = wikipedia.search(topic)
+            if not results:
+                return f"""1. 개념 정의
+'{topic}'에 대한 위키피디아 문서를 찾지 못했습니다.
+
+2. 핵심 원리
+검색어를 더 구체적으로 입력해보세요.
+
+3. 쉬운 예시
+예: SQL JOIN, 로지스틱 회귀, 트랜스포머"""
+            page_title = results[0]
+            summary = wikipedia.summary(page_title, sentences=3, auto_suggest=False)
+        except Exception:
+            return f"""1. 개념 정의
+'{topic}'에 대한 설명을 불러오지 못했습니다.
+
+2. 핵심 원리
+위키피디아 검색 중 오류가 발생했습니다.
+
+3. 쉬운 예시
+조금 더 구체적인 키워드로 다시 입력해보세요."""
+
+    sentences = split_sentences(summary)
+
+    definition = sentences[0] if len(sentences) >= 1 else f"{topic}에 대한 요약을 찾았습니다."
+    principle = " ".join(sentences[1:]) if len(sentences) >= 2 else f"{topic}는 관련 분야에서 중요한 개념으로 활용됩니다."
+    example = f"예를 들어 '{page_title}'는 실제 학습이나 설명, 문제 풀이에서 핵심 개념으로 자주 등장합니다."
+
+    return f"""1. 개념 정의
+{definition}
+
+2. 핵심 원리
+{principle}
+
+3. 쉬운 예시
+{example}"""
+
+
 def get_library_explanations(subject, selected_libs, library_map):
     infos = library_map.get(subject, {})
     if not selected_libs:
@@ -709,11 +774,7 @@ WHERE SALARY >= 5000;""",
 # LLM functions
 # --------------------------------------------------
 def explain_with_llm(subject, concept):
-    instruction = f"{subject}의 개념과 원리를 학습자에게 쉽게 설명하라."
-    input_text = f"과목: {subject}\n개념: {concept}"
-    output_format = "1. 개념 정의\n2. 핵심 원리\n3. 쉬운 예시"
-    prompt = build_prompt(instruction, input_text, output_format)
-    return call_api_generate(prompt, max_new_tokens=150)
+    return get_concept_from_wikipedia(concept)
 
 
 def answer_question_with_llm(subject, question):
@@ -1018,7 +1079,7 @@ if subject == "SQL":
         key="sql_concept"
     )
 
-    concept_result = get_default_concept_answer() if concept == "DATA 가 뭐야" else explain_with_llm("SQL", concept)
+    concept_result = explain_with_llm("SQL", concept)
 
     st.markdown('<div class="result-card"><div class="card-title">개념 설명</div></div>', unsafe_allow_html=True)
     render_result_textarea(concept_result, 260, "sql_concept_default")
@@ -1109,7 +1170,7 @@ elif subject == "Python":
         key="python_concept"
     )
 
-    concept_result = get_default_concept_answer() if concept == "DATA 가 뭐야" else explain_with_llm("Python", concept)
+    concept_result = explain_with_llm("Python", concept)
 
     st.markdown('<div class="result-card"><div class="card-title">개념 설명</div></div>', unsafe_allow_html=True)
     render_result_textarea(concept_result, 260, "python_concept_default")
@@ -1153,7 +1214,7 @@ elif subject in ["통계", "ML", "DL", "LLM", "AI"]:
         key=f"{subject}_concept"
     )
 
-    concept_result = get_default_concept_answer() if concept == "DATA 가 뭐야" else explain_with_llm(subject, concept)
+    concept_result = explain_with_llm(subject, concept)
 
     st.markdown('<div class="result-card"><div class="card-title">개념 설명</div></div>', unsafe_allow_html=True)
     render_result_textarea(concept_result, 260, f"{subject}_concept_default")
