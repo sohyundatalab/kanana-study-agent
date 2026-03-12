@@ -422,12 +422,19 @@ def build_prompt(instruction: str, input_text: str, output_format: str, example:
 
 def render_result_textarea(value, height=260, key="result_box"):
     dynamic_key = f"{key}_{abs(hash(str(value)))}"
+    st.markdown(
+        f"""
+        <div style="background:#f3f4f6;border:1px solid #e5e7eb;border-radius:14px;padding:14px 16px;white-space:pre-wrap;line-height:1.7;color:#111827;margin-bottom:10px;">{value}</div>
+        """,
+        unsafe_allow_html=True
+    )
+    st.caption("PC에서 복사하려면 아래 박스에서 드래그하거나 전체 선택하세요.")
     st.text_area(
-        "result",
+        "복사용 텍스트",
         value=value,
         height=height,
         key=dynamic_key,
-        disabled=True,
+        disabled=False,
         label_visibility="collapsed"
     )
 
@@ -1032,7 +1039,7 @@ if subject == "SQL":
         key="sql_concept"
     )
 
-    if st.button("💛 SQL 개념 설명 받기", use_container_width=True, key="sql_concept_btn"):
+    if st.button("💛개념 설명 받기(Kanana)💛", use_container_width=True, key="sql_concept_btn"):
         try:
             if concept.strip() == "" or concept.strip() == "DATA 가 뭐야":
                 st.session_state["SQL_concept_result"] = get_default_concept_answer()
