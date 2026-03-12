@@ -787,7 +787,8 @@ def explain_with_llm(subject, concept):
 예: JOIN, 정규분포, 트랜스포머, CTE"""
 
     instruction = f"{subject} 학습용 개념을 초보자도 이해할 수 있게 설명하라."
-    input_text = f"과목: {subject}\n개념: {concept}"
+    input_text = f"과목: {subject}
+개념: {concept}"
     output_format = "1. 개념 정의
 2. 핵심 원리
 3. 쉬운 예시 또는 예제"
