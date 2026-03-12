@@ -417,17 +417,6 @@ def render_result_textarea(value, height=260, key="result_box"):
     )
 
 
-def get_default_concept_answer() -> str:
-    return """1. 개념 정의  
-데이터는 관찰하거나 기록한 사실, 값, 문자, 숫자, 이미지 같은 정보의 재료예요.
-
-2. 핵심 원리  
-아직 정리되지 않은 데이터는 그 자체로는 의미가 약할 수 있지만, 모으고 정리하고 해석하면 정보가 되고 의사결정의 근거가 됩니다.
-
-3. 쉬운 예시  
-학생의 시험 점수, 하루 걸음 수, 쇼핑몰 주문 내역, 센서가 측정한 온도 같은 것들이 모두 데이터예요.
-"""
-
 
 def get_taste_bundle(subject: str, topic: str):
     if not topic:
