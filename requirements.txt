@@ -10,3 +10,4 @@ matplotlib
 wikipedia
 numpy
 streamlit
+altair<5
