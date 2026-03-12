@@ -929,7 +929,14 @@ defaults = {
     "library_search": "",
     "sql_quiz_index": 0,
     "sql_show_answer": False,
-    "sql_user_answer": "SELECT"
+    "sql_user_answer": "SELECT",
+    "sql_concept": "DATA 가 뭐야",
+    "python_concept": "DATA 가 뭐야",
+    "통계_concept": "DATA 가 뭐야",
+    "ML_concept": "DATA 가 뭐야",
+    "DL_concept": "DATA 가 뭐야",
+    "LLM_concept": "DATA 가 뭐야",
+    "AI_concept": "DATA 가 뭐야"
 }
 for k, v in defaults.items():
     if k not in st.session_state:
@@ -1023,6 +1030,13 @@ if subject != "로드맵 생성하기":
         with cols[i % 3]:
             if st.button(topic_name, key=f"{subject}_taste_{i}", use_container_width=True):
                 st.session_state["selected_example_topic"] = topic_name
+                if subject == "SQL":
+                    st.session_state["sql_concept"] = topic_name
+                elif subject == "Python":
+                    st.session_state["python_concept"] = topic_name
+                elif subject in ["통계", "ML", "DL", "LLM", "AI"]:
+                    st.session_state[f"{subject}_concept"] = topic_name
+                st.rerun()
 
     taste_topic = st.session_state["selected_example_topic"]
     col1, col2, col3 = st.columns(3)
@@ -1075,11 +1089,10 @@ if subject == "SQL":
 
     concept = st.text_input(
         "개념 입력",
-        value=st.session_state["selected_example_topic"] if st.session_state["selected_example_topic"] else "DATA 가 뭐야",
         key="sql_concept"
     )
 
-    concept_result = explain_with_llm("SQL", concept)
+    concept_result = explain_with_llm("SQL", st.session_state["sql_concept"])
 
     st.markdown('<div class="result-card"><div class="card-title">개념 설명</div></div>', unsafe_allow_html=True)
     render_result_textarea(concept_result, 260, "sql_concept_default")
@@ -1166,11 +1179,10 @@ elif subject == "Python":
 
     concept = st.text_input(
         "개념 입력",
-        value=st.session_state["selected_example_topic"] if st.session_state["selected_example_topic"] else "DATA 가 뭐야",
         key="python_concept"
     )
 
-    concept_result = explain_with_llm("Python", concept)
+    concept_result = explain_with_llm("Python", st.session_state["python_concept"])
 
     st.markdown('<div class="result-card"><div class="card-title">개념 설명</div></div>', unsafe_allow_html=True)
     render_result_textarea(concept_result, 260, "python_concept_default")
@@ -1210,11 +1222,10 @@ elif subject in ["통계", "ML", "DL", "LLM", "AI"]:
 
     concept = st.text_input(
         "개념 입력",
-        value=st.session_state["selected_example_topic"] if st.session_state["selected_example_topic"] else "DATA 가 뭐야",
         key=f"{subject}_concept"
     )
 
-    concept_result = explain_with_llm(subject, concept)
+    concept_result = explain_with_llm(subject, st.session_state[f"{subject}_concept"])
 
     st.markdown('<div class="result-card"><div class="card-title">개념 설명</div></div>', unsafe_allow_html=True)
     render_result_textarea(concept_result, 260, f"{subject}_concept_default")
